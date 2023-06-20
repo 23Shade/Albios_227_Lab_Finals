@@ -1,0 +1,87 @@
+1. Register:
+POST localhost:3000/register
+
+{
+	"email": "albios23@gmail.com",
+	"password": "albios23",
+	"isAdmin": true
+}
+
+
+2. Log In:
+POST localhost:3000/login
+
+{
+	"email": "albios23@gmail.com",
+	"password": "albios23"
+}
+
+
+3. Create a product (Admin only):
+POST localhost:3000/products
+
+{
+    "userId": "6491e77974e241ae3c6cfccb",
+    "name": "Razer Microphone",
+    "description": "Microphone Product",
+    "price": 250,
+    "isActive": true
+}
+
+4. Retrieve all active products
+GET http://localhost:3000/products
+
+5. Retrieve specific product by ID
+GET http://localhost:3000/products/:productId
+(Replace :productId with the product ID)
+
+6. Retrieve all Orders (Admin only)
+GET http://localhost:3000/users/orders
+(Header: key: user-id, Value: userID of the admin)
+
+7. Place an Order
+POST http://localhost:3000/orders
+{
+  "userId": "6491e77974e241ae3c6cfccb",
+  "products": [
+    {
+      "name": "Razer Mouse",
+      "quantity": 1
+    },
+    {
+      "name": "Razer Keyboard",
+      "quantity": 1
+    }
+  ],
+  "totalAmount": 300
+}
+
+8. Delete an Order
+DELETE http://localhost:3000/orders/:orderId
+(Replace :orderId with the orderId)
+
+9. Update a product (Admin only)
+PUT http://localhost:3000/products/:productId
+(Replace :productId with the product ID)
+
+(Header: key: user-id, Value: userID of the admin)
+
+{
+	"name": "New Product Name",
+	"description": "New Product Description",
+	"price": 19.99
+}
+
+10. Archive (soft delete) a product (admin only):
+PUT http://localhost:3000/products/archive/:productId
+(Replace :productId with the product ID)
+
+(Header: key: user-id, Value: userID of the admin)
+
+{
+    "isActive": true
+}
+
+
+
+
