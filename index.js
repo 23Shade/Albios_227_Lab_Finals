@@ -223,32 +223,6 @@ app.post('/orders', (req, res) => {
     });
 });
 
-// Update a product (for Admin only)
-app.put('/products/:productId', (req, res) => {
-  const { productId } = req.params;
-  const { name, description, price } = req.body;
-
-  // Check if the user is an admin
-  User.findById(req.headers['user-id'])
-    .then((user) => {
-      if (user && user.isAdmin) {
-        // Find the product by productId and update its details
-        Product.findByIdAndUpdate(productId, { name, description, price })
-          .then(() => {
-            res.json({ message: 'Product updated successfully' });
-          })
-          .catch((error) => {
-            res.status(500).json({ error: 'Failed to update product' });
-          });
-      } else {
-        res.status(401).json({ error: 'Unauthorized access' });
-      }
-    })
-    .catch((error) => {
-      res.status(500).json({ error: 'Failed to retrieve user' });
-    });
-});
-
 // Delete a product (for Admin only)
 app.delete('/products/:productId', (req, res) => {
   const { productId } = req.params;
@@ -259,8 +233,12 @@ app.delete('/products/:productId', (req, res) => {
       if (user && user.isAdmin) {
         // Find the product by productId and delete it
         Product.findByIdAndDelete(productId)
-          .then(() => {
-            res.json({ message: 'Product deleted successfully' });
+          .then((product) => {
+            if (product) {
+              res.json({ message: 'Product deleted successfully' });
+            } else {
+              res.status(404).json({ error: 'Product not found' });
+            }
           })
           .catch((error) => {
             res.status(500).json({ error: 'Failed to delete product' });
@@ -273,3 +251,145 @@ app.delete('/products/:productId', (req, res) => {
       res.status(500).json({ error: 'Failed to retrieve user' });
     });
 });
+
+// Update user password
+app.put('/users/password', (req, res) => {
+  const { email, currentPassword, newPassword } = req.body;
+
+  // Find the user by email and current password
+  User.findOne({ email, password: currentPassword })
+    .then((user) => {
+      if (user) {
+        // Update the user's password
+        user.password = newPassword;
+        user.save()
+          .then((result) => {
+            res.json({ message: 'Password updated successfully' });
+          })
+          .catch((error) => {
+            res.status(500).json({ error: 'Failed to update password' });
+          });
+      } else {
+        res.status(401).json({ error: 'Invalid credentials' });
+      }
+    })
+    .catch((error) => {
+      res.status(500).json({ error: 'Failed to retrieve user' });
+    });
+});
+
+// Update a product (for Admin only)
+app.put('/products/:productId', (req, res) => {
+    const { productId } = req.params;
+    const { name, description, price } = req.body;
+  
+    // Check if the user is an admin
+    User.findById(req.headers['user-id'])
+      .then((user) => {
+        if (user && user.isAdmin) {
+          // Find the product by productId and update its details
+          Product.findByIdAndUpdate(productId, { name, description, price }, { new: true })
+            .then((product) => {
+              if (product) {
+                res.json({ message: 'Product updated successfully', product });
+              } else {
+                res.status(404).json({ error: 'Product not found' });
+              }
+            })
+            .catch((error) => {
+              res.status(500).json({ error: 'Failed to update product' });
+            });
+        } else {
+          res.status(401).json({ error: 'Unauthorized access' });
+        }
+      })
+      .catch((error) => {
+        res.status(500).json({ error: 'Failed to retrieve user' });
+      });
+  });
+
+// Archive (soft delete) or restore a product (admin only)
+app.put('/products/archive/:productId', (req, res) => {
+    const { productId } = req.params;
+    const userId = req.headers['user-id'];
+  
+    // Check if the user is an admin
+    User.findById(userId)
+      .then((user) => {
+        if (user && user.isAdmin) {
+          // Find the product by productId
+          Product.findById(productId)
+            .then((product) => {
+              if (product) {
+                // Toggle the isActive field
+                product.isActive = !product.isActive;
+                return product.save();
+              } else {
+                throw new Error('Product not found');
+              }
+            })
+            .then((updatedProduct) => {
+              const message = updatedProduct.isActive ? 'Product restored successfully' : 'Product archived successfully';
+              res.json({ message, product: updatedProduct });
+            })
+            .catch((error) => {
+              res.status(500).json({ error: 'Failed to update product status' });
+            });
+        } else {
+          res.status(401).json({ error: 'Unauthorized access' });
+        }
+      })
+      .catch((error) => {
+        res.status(500).json({ error: 'Failed to retrieve user' });
+      });
+  });  
+  
+  
+// Delete an order
+app.delete('/orders/:orderId', (req, res) => {
+    const { orderId } = req.params;
+  
+    // Find the order by orderId and delete it
+    Order.findByIdAndDelete(orderId)
+      .then((order) => {
+        if (order) {
+          res.json({ message: 'Order deleted successfully' });
+        } else {
+          res.status(404).json({ error: 'Order not found' });
+        }
+      })
+      .catch((error) => {
+        res.status(500).json({ error: 'Failed to delete order' });
+      });
+  });
+  
+  // Update user password
+  app.put('/users/password', (req, res) => {
+    const { email, currentPassword, newPassword } = req.body;
+  
+    // Find the user by email and current password
+    User.findOne({ email, password: currentPassword })
+      .then((user) => {
+        if (user) {
+          // Update the user's password
+          user.password = newPassword;
+          user.save()
+            .then((result) => {
+              res.json({ message: 'Password updated successfully' });
+            })
+            .catch((error) => {
+              res.status(500).json({ error: 'Failed to update password' });
+            });
+        } else {
+          res.status(401).json({ error: 'Invalid credentials' });
+        }
+      })
+      .catch((error) => {
+        res.status(500).json({ error: 'Failed to retrieve user' });
+      });
+  });  
+  
+// Handle invalid routes
+app.use((req, res) => {
+    res.status(404).json({ error: 'Invalid route' });
+  });
