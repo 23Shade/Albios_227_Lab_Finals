@@ -1,0 +1,33 @@
+const users = [
+  { id: 1, name: 'John', isAdmin: true },
+  { id: 2, name: 'Jane', isAdmin: false },
+];
+
+// Middleware to validate user
+const validateUser = (req, res, next) => {
+  const isAuthenticated = true; // Assuming the user is authenticated
+  
+  if (isAuthenticated) {
+
+    req.user = { id: 1, name: 'John', isAdmin: true }; // Sample user data
+    next();
+  } else {
+    // If the user is not authenticated, you can send an unauthorized response or redirect the user to a login page
+    res.status(401).json({ message: 'Unauthorized' });
+  }
+};
+
+// Middleware to check if user is admin
+const isAdmin = (req, res, next) => {
+  // Check if the authenticated user is an admin
+  if (req.user && req.user.isAdmin) {
+    next();
+  } else {
+    res.status(403).json({ message: 'Forbidden' });
+  }
+};
+
+module.exports = {
+  validateUser,
+  isAdmin,
+};
