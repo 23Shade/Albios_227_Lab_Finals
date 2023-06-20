@@ -1,27 +1,37 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const userRoutes = require('./routes/api/userRoutes');
 
-const PORT = 3000;
+// Create an instance of Express
 const app = express();
+
+// Middleware
 app.use(express.json());
 
-// Connect to MongoDB
-mongoose.connect('mongodb://localhost/ecommerce', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+// MongoDB Atlas connection string
+const uri = 'mongodb+srv://admin:admin123@dlsud-sandbox.6ccxmzi.mongodb.net/e-commerce?retryWrites=true&w=majority';
+
+// Connect to MongoDB Atlas
+mongoose
+  .connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    console.log('Connected to MongoDB Atlas');
+    // Start the server after successful database connection
+    const port = 3000;
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
+  })
+  .catch((error) => {
+    console.error('Error connecting to MongoDB Atlas:', error);
+  });
+
+// Define routes
+app.get('/', (req, res) => {
+  res.send('Hello, World!');
 });
 
-// Routes
-app.use('/api/users', userRoutes);
-
-// Error handling middleware
+// Error handler middleware
 app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(500).json({ message: 'Internal server error' });
-});
-
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Your server is running on port ${PORT}`);
+  console.error(err);
+  res.status(500).json({ error: 'Internal Server Error' });
 });
