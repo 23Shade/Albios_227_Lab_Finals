@@ -102,12 +102,14 @@ app.post('/login', (req, res) => {
 
 // Create a new product (for Admin only)
 app.post('/products', (req, res) => {
-  const { userId, name, description, price } = req.body;
+  const userId = req.headers['user-id'];
 
   // Check if the user is an admin
   User.findById(userId)
     .then((user) => {
       if (user && user.isAdmin) {
+        const { name, description, price } = req.body;
+
         // Create a new product object
         const product = new Product({
           userId,
@@ -132,6 +134,7 @@ app.post('/products', (req, res) => {
       res.status(500).json({ error: 'Failed to retrieve user' });
     });
 });
+
 
 // Get all active products
 app.get('/products', (req, res) => {
