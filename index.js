@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 
@@ -8,7 +9,7 @@ const app = express();
 app.use(express.json());
 
 // MongoDB Atlas connection string
-const uri = 'mongodb+srv://admin:admin123@dlsud-sandbox.6ccxmzi.mongodb.net/e-commerce?retryWrites=true&w=majority';
+const uri = process.env.MONGODB_URI;
 
 // Connect to MongoDB Atlas
 mongoose
